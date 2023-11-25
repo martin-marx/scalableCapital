@@ -1,0 +1,13 @@
+
+
+time.time_ns()
+
+
+
+CREATE TABLE weather (
+    song_name    VARCHAR,
+    user_name    VARCHAR,
+    time       TIMESTAMP,
+    date            DATE,
+    hash         VARCHAR
+);
