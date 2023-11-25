@@ -1,13 +1,14 @@
 import duckdb
 import hashlib
+import uuid
 
 # con = duckdb.connect("music.db")
-day = 28
+day = 29
 month = 11
 year = 2023
 
-date = f"{year}-{month}-{day}"
-read_data_file_name = f"{date}.json"
+read_date = f"{year}-{month}-{day}"
+read_data_file_name = f"{read_date}.json"
 read_data_file_path = f"resources/{read_data_file_name}"
 read_new_data_script = f"SELECT * FROM '{read_data_file_path}'"
 result_table_name = 'listenings_facts'
@@ -31,13 +32,17 @@ con = duckdb.connect("listenings_test.db")
 # res2 = con.sql(f"select * from {result_table_name}")
 # print(res2)
 
+# Writing section
+# -----------------
 prepare_to_write_query = f"SELECT song as song_name, user as user_name, time as time, datetrunc('day', time) as date, md5(concat(song, user, time)) as hash FROM '{read_data_file_path}'"
-write_query = f"COPY ({prepare_to_write_query}) TO '{result_table_name}' (FORMAT PARQUET, PARTITION_BY (date), OVERWRITE_OR_IGNORE)"
-# write_query = f"COPY ({prepare_to_write_query}) TO '{result_table_name}' (FORMAT PARQUET, PARTITION_BY (date))"
+write_query = f"""COPY ({prepare_to_write_query}) TO '{result_table_name}' (FORMAT PARQUET, PARTITION_BY (date), OVERWRITE_OR_IGNORE, FILENAME_PATTERN "listenings_{uuid.uuid4()}")"""
 
-con.sql(write_query)
+# con.sql(write_query)
 
-read_parquet_query = f"select * from read_parquet('{result_table_name}/date={date}/*.parquet')"
+# Reading to check section
+# -------------------
+# read_parquet_query = f"SELECT * from read_parquet('{result_table_name}/date={read_date}/*.parquet')"
+read_parquet_query = f"SELECT * from read_parquet('{result_table_name}/*/*.parquet')"
 
 written_res = con.sql(read_parquet_query)
 print(written_res)
