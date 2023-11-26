@@ -17,19 +17,28 @@ read_data_file_name = f"{read_date}.json"
 read_data_file_path = f"resources/*.json"
 
 result_table_name = 'listenings_facts'
+counters_table_name = 'counters'
 
-con = duckdb.connect("listenings_test.db")
+# con = duckdb.connect("listenings_test.db")
 # con.sql(f"""
 # CREATE TABLE {result_table_name} (
 #     song_name    VARCHAR,
 #     user_name    VARCHAR,
-#     time       TIMESTAMP,
+#     time         TIMESTAMP,
 #     hash         VARCHAR,
-#     year         SMALLSERIAL,
-#     month        SMALLSERIAL,
-#     day          SMALLSERIAL
+#     year         SMALLINT,
+#     month        SMALLINT,
+#     day          SMALLINT
 # );""")
 
+# con.sql(f"""
+# CREATE TABLE {counters_table_name} (
+#     user_name    VARCHAR,
+#     year         SMALLINT,
+#     month        SMALLINT,
+#     day          SMALLINT
+# );""")
+# con.sql("DROP TABLE counters")
 
 # Writing section
 # -----------------
@@ -41,7 +50,7 @@ write_query = f"""COPY ({prepare_to_write_query}) TO '{result_table_name}' (FORM
 # Establishing of idempotency
 # -------------------
 get_write_dates_query = f"SELECT DISTINCT datetrunc('day', time) as date FROM '{read_data_file_path}'"
-dates = con.sql(get_write_dates_query).fetchall()
+dates = duckdb.sql(get_write_dates_query).fetchall()
 existing_data_queries = [
     f"SELECT hash FROM read_parquet('{result_table_name}/year={date.year}/month={date.month}/day={date.day}/*.parquet')"
     for date,
@@ -61,17 +70,27 @@ if existing_data_queries:
     )
     SELECT new_data.* from new_data ANTI JOIN existing_hashes ON new_data.hash = existing_hashes.hash
   """
-    con.sql(new_data_query).show()
+    duckdb.sql(new_data_query).show()
 else:
     new_data_query = f"""SELECT song as song_name, user as user_name, time as time, md5(concat(song, user, time)) as hash, year(time) as year, month(time) as month, day(time) as day FROM '{read_data_file_path}'"""
 
 write_query = f"""COPY ({new_data_query}) TO '{result_table_name}' (FORMAT PARQUET, PARTITION_BY (year, month, day), OVERWRITE_OR_IGNORE, FILENAME_PATTERN "listenings_{uuid.uuid4()}")"""
-con.sql(write_query)
+duckdb.sql(write_query)
 
 # Reading to check section
-# -------------------
-# read_parquet_query = f"SELECT * FROM read_parquet('{result_table_name}/date={read_date}/*.parquet')"
 read_parquet_query = f"SELECT * FROM read_parquet('{result_table_name}/**/*.parquet')"
-con.sql(read_parquet_query).show()
+duckdb.sql(read_parquet_query).show()
 
 
+recalc_read_names_queries = [
+    f"SELECT distinct user_name, year, month, day FROM read_parquet('{result_table_name}/year={date.year}/month={date.month}/day={date.day}/*.parquet')"
+    for date,
+    in dates]
+
+for recalc_read_names_query in recalc_read_names_queries:
+    recalc_query = f"""COPY ({recalc_read_names_query}) TO '{counters_table_name}' (FORMAT PARQUET, PARTITION_BY (year, month, day), OVERWRITE_OR_IGNORE)"""
+    duckdb.sql(recalc_query)
+
+# Reading to check section
+read_parquet_query = f"SELECT * FROM read_parquet('{counters_table_name}/**/*.parquet')"
+duckdb.sql(read_parquet_query).show()
