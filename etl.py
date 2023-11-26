@@ -18,10 +18,6 @@ read_data_file_path = f"resources/*.json"
 
 result_table_name = 'listenings_facts'
 
-# duckdb.read_json(f"resources/{date}.json")
-# res = duckdb.sql(read_new_data_script)
-# print(res)
-
 con = duckdb.connect("listenings_test.db")
 # con.sql(f"""
 # CREATE TABLE {result_table_name} (
@@ -65,8 +61,7 @@ if existing_data_queries:
     )
     SELECT new_data.* from new_data ANTI JOIN existing_hashes ON new_data.hash = existing_hashes.hash
   """
-    new_data = con.sql(new_data_query)
-    print(new_data)
+    con.sql(new_data_query).show()
 else:
     new_data_query = f"""SELECT song as song_name, user as user_name, time as time, md5(concat(song, user, time)) as hash, year(time) as year, month(time) as month, day(time) as day FROM '{read_data_file_path}'"""
 
@@ -77,9 +72,6 @@ con.sql(write_query)
 # -------------------
 # read_parquet_query = f"SELECT * FROM read_parquet('{result_table_name}/date={read_date}/*.parquet')"
 read_parquet_query = f"SELECT * FROM read_parquet('{result_table_name}/**/*.parquet')"
-written_res = con.sql(read_parquet_query)
-print(written_res)
+con.sql(read_parquet_query).show()
 
-# 6181c096ea20f44c6a7af00583a00e53
-# c61abd23bd73b4740c40e63b2ce68ba3
-# f5fd2a76c259c0bde5838b5ccfd33fe5
+
