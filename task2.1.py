@@ -1,6 +1,5 @@
 import duckdb
 
-con = duckdb.connect("listenings_test.db")
 result_table_name = 'listenings_facts'
 
 # 2.1.1
@@ -16,7 +15,7 @@ ORDER BY
   COUNT(user_name) DESC
 LIMIT 10
 """
-con.sql(write_query).show()
+duckdb.sql(write_query).show()
 
 # 2.1.2
 write_query = f"""
@@ -27,7 +26,7 @@ FROM
 WHERE 
   year = 2023 AND month = 11 AND day = 29 
 """
-con.sql(write_query).show()
+duckdb.sql(write_query).show()
 
 # 2.1.3(version 1)
 write_query = f"""
@@ -47,7 +46,7 @@ FROM
 WHERE 
   row_number = 1
 """
-con.sql(write_query).show()
+duckdb.sql(write_query).show()
 
 # 2.1.3(version 2)
 write_query = f"""
@@ -69,4 +68,4 @@ INNER JOIN
   max_time
 ON data.user_name = max_time.user_name AND data.time = max_time.time
 """
-con.sql(write_query).show()
+duckdb.sql(write_query).show()

@@ -1,6 +1,5 @@
 import duckdb
 
-con = duckdb.connect("listenings_test.db")
 result_table_name = 'listenings_facts'
 
 # 2.2
@@ -35,4 +34,4 @@ WHERE
 ORDER BY
   user, listens
 """
-con.sql(write_query).show()
+duckdb.sql(write_query).show()
