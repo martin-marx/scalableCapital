@@ -88,7 +88,7 @@ recalc_read_names_queries = [
     in dates]
 
 for recalc_read_names_query in recalc_read_names_queries:
-    recalc_query = f"""COPY ({recalc_read_names_query}) TO '{counters_table_name}' (FORMAT PARQUET, PARTITION_BY (year, month, day), OVERWRITE_OR_IGNORE)"""
+    recalc_query = f"""COPY ({recalc_read_names_query}) TO '{counters_table_name}' (FORMAT PARQUET, PARTITION_BY (year, month, day), OVERWRITE_OR_IGNORE, FILENAME_PATTERN "counters")"""
     duckdb.sql(recalc_query)
 
 # Reading to check section
