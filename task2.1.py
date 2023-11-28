@@ -68,7 +68,8 @@ FROM
   read_parquet('{result_table_name}/**/*.parquet') AS data
 INNER JOIN
   max_time
-ON data.user_name = max_time.user_name AND data.time = max_time.time
+ON 
+  data.user_name = max_time.user_name AND data.time = max_time.time
 ORDER BY
   data.user_name
 """

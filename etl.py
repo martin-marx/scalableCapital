@@ -47,8 +47,6 @@ existing_data_queries = [
     for date,
     in dates
     if os.path.isdir(f"{result_table_name}/year={date.year}/month={date.month}/day={date.day}")]
-# print(existing_data_queries)
-# print("\n")
 
 if existing_data_queries:
     hashes_query = "\nUNION ALL\n".join(existing_data_queries)
@@ -71,7 +69,9 @@ if existing_data_queries:
     SELECT 
       new_data.* 
     FROM 
-      new_data ANTI JOIN existing_hashes ON new_data.hash = existing_hashes.hash
+      new_data 
+    ANTI JOIN 
+      existing_hashes ON new_data.hash = existing_hashes.hash
   """
     duckdb.sql(new_data_query).show()
 else:
@@ -89,8 +89,6 @@ else:
 """
 
 write_query = f"""COPY ({new_data_query}) TO '{result_table_name}' (FORMAT PARQUET, PARTITION_BY (year, month, day), OVERWRITE_OR_IGNORE, FILENAME_PATTERN "listenings_{uuid.uuid4()}")"""
-
-
 duckdb.sql(write_query)
 
 # Reading to check section
