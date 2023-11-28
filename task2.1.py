@@ -24,7 +24,7 @@ SELECT
 FROM
   read_parquet('{result_table_name}/**/*.parquet', hive_partitioning = 1)
 WHERE 
-  year = 2023 AND month = 11 AND day = 29 
+  year = 2019 AND month = 3 AND day = 1 
 """
 duckdb.sql(write_query).show()
 
@@ -45,6 +45,8 @@ FROM
   ranked
 WHERE 
   row_number = 1
+ORDER BY
+  user_name
 """
 duckdb.sql(write_query).show()
 
@@ -67,5 +69,7 @@ FROM
 INNER JOIN
   max_time
 ON data.user_name = max_time.user_name AND data.time = max_time.time
+ORDER BY
+  data.user_name
 """
 duckdb.sql(write_query).show()
