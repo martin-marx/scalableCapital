@@ -16,7 +16,7 @@ WITH counters AS (
 ),
 ranked AS (
   SELECT
-    ROW_NUMBER() OVER (PARTITION BY user_name, date ORDER BY listens DESC) AS ranked_listens,
+    ROW_NUMBER() OVER (PARTITION BY user_name ORDER BY listens DESC) AS ranked_listens,
     listens,
     user_name,
     date
@@ -26,7 +26,7 @@ ranked AS (
 SELECT 
   user_name, 
   listens,
-  date 
+  date
 FROM
   ranked
 WHERE 
