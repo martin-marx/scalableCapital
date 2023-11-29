@@ -20,7 +20,7 @@ duckdb.sql(write_query).show()
 # 2.1.2
 write_query = f"""
 SELECT 
-  COUNT(distinct user_name) AS listeners_number
+  COUNT(DISTINCT user_name) AS listeners_number
 FROM
   read_parquet('{result_table_name}/**/*.parquet', hive_partitioning = 1)
 WHERE 
@@ -32,7 +32,7 @@ duckdb.sql(write_query).show()
 write_query = f"""
 WITH ranked AS (
   SELECT  
-    RANK() OVER (PARTITION BY user_name ORDER BY time ASC) AS row_number,
+    RANK() OVER (PARTITION BY user_name ORDER BY time ASC) AS rank,
     user_name,
     song_name
   FROM
@@ -44,7 +44,7 @@ SELECT
 FROM
   ranked
 WHERE 
-  row_number = 1
+  rank = 1
 ORDER BY
   user_name
 """
