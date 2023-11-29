@@ -6,7 +6,7 @@ import shutil
 read_data_file_path = f"resources/dataset.txt"
 
 result_table_name = 'listenings_facts'
-counters_table_name = 'counters'
+names_table_name = 'names'
 
 columns_to_read = """
      {
@@ -105,12 +105,13 @@ recalc_read_names_queries = [
     in dates]
 
 for date, in dates:
-    shutil.rmtree(f"""{counters_table_name}/year={date.year}/month={date.month}/day={date.day}""")
+    if os.path.isdir(f"{names_table_name}/year={date.year}/month={date.month}/day={date.day}"):
+        shutil.rmtree(f"""{names_table_name}/year={date.year}/month={date.month}/day={date.day}""")
 
 for recalc_read_names_query in recalc_read_names_queries:
-    recalc_query = f"""COPY ({recalc_read_names_query}) TO '{counters_table_name}' (FORMAT PARQUET, PARTITION_BY (year, month, day), OVERWRITE_OR_IGNORE, FILENAME_PATTERN "counters")"""
+    recalc_query = f"""COPY ({recalc_read_names_query}) TO '{names_table_name}' (FORMAT PARQUET, PARTITION_BY (year, month, day), OVERWRITE_OR_IGNORE, FILENAME_PATTERN "counters")"""
     duckdb.sql(recalc_query)
 
 # Reading to check section
-read_parquet_query = f"SELECT * FROM read_parquet('{counters_table_name}/**/*.parquet')"
+read_parquet_query = f"SELECT * FROM read_parquet('{names_table_name}/**/*.parquet')"
 duckdb.sql(read_parquet_query).show()  # 7358
