@@ -28,11 +28,11 @@ WHERE
 """
 duckdb.sql(write_query).show()
 
-# 2.1.3(version 1)
+# 2.1.3
 write_query = f"""
 WITH ranked AS (
   SELECT  
-    RANK() OVER (PARTITION BY user_name ORDER BY time ASC) AS rank,
+    ROW_NUMBER() OVER (PARTITION BY user_name ORDER BY time ASC) AS rank,
     user_name,
     song_name
   FROM
@@ -47,30 +47,5 @@ WHERE
   rank = 1
 ORDER BY
   user_name
-"""
-duckdb.sql(write_query).show()
-
-# 2.1.3(version 2)
-write_query = f"""
-WITH max_time AS (
-  SELECT  
-    MIN(time) AS time,
-    user_name
-  FROM
-    read_parquet('{result_table_name}/**/*.parquet')
-  GROUP BY
-    user_name
-)
-SELECT 
-  data.user_name, 
-  data.song_name 
-FROM
-  read_parquet('{result_table_name}/**/*.parquet') AS data
-INNER JOIN
-  max_time
-ON 
-  data.user_name = max_time.user_name AND data.time = max_time.time
-ORDER BY
-  data.user_name
 """
 duckdb.sql(write_query).show()
