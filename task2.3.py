@@ -55,21 +55,23 @@ def get_the_result_script(initial_date):
     return write_query
 
 
-queries = [f"""({get_the_result_script(initial_date)})""" for initial_date in initial_dates]
-if queries:
-    combined_query = "\nUNION ALL\n".join(queries)
-    final_query = f"""
-          WITH data AS (
-            {combined_query}
-          )
-          SELECT
-            date,
-            number_active_users,
-            percentage_active_users
-          FROM
-            data
-          ORDER BY
-            date
-          
-    """
-    duckdb.sql(final_query).show()
+if __name__ == '__main__':
+
+    queries = [f"""({get_the_result_script(initial_date)})""" for initial_date in initial_dates]
+    if queries:
+        combined_query = "\nUNION ALL\n".join(queries)
+        final_query = f"""
+              WITH data AS (
+                {combined_query}
+              )
+              SELECT
+                date,
+                number_active_users,
+                percentage_active_users
+              FROM
+                data
+              ORDER BY
+                date
+              
+        """
+        duckdb.sql(final_query).show()

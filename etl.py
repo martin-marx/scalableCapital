@@ -102,8 +102,9 @@ def read_name_results():
     duckdb.sql(read_parquet_query).show()
 
 
-dates = get_new_data_dates()
-save_data(dates)
-read_results()
-recalculate_names(dates)
-read_name_results()
+if __name__ == '__main__':
+    dates = get_new_data_dates()
+    save_data(dates)
+    read_results()
+    recalculate_names(dates)
+    read_name_results()
