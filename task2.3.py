@@ -72,6 +72,5 @@ if __name__ == '__main__':
                 data
               ORDER BY
                 date
-              
         """
         duckdb.sql(final_query).show()
