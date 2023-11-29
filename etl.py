@@ -1,6 +1,7 @@
 import duckdb
 import uuid
 import os
+import shutil
 
 read_data_file_path = f"resources/dataset.txt"
 
@@ -36,8 +37,6 @@ SELECT
 FROM 
   {read_table}
 """
-
-
 
 # Establishing of idempotency
 get_write_dates_query = f"SELECT DISTINCT DATETRUNC('day', TO_TIMESTAMP(listened_at)) AS date FROM {read_table}"
@@ -95,11 +94,18 @@ duckdb.sql(write_query)
 read_parquet_query = f"SELECT * FROM read_parquet('{result_table_name}/**/*.parquet')"
 duckdb.sql(read_parquet_query).show()
 
+read_parquet_query = f"SELECT count(*) FROM read_parquet('{result_table_name}/**/*.parquet')"
+duckdb.sql(read_parquet_query).show()
 
+
+#Recalc names
 recalc_read_names_queries = [
     f"SELECT DISTINCT user_name, year, month, day FROM read_parquet('{result_table_name}/year={date.year}/month={date.month}/day={date.day}/*.parquet')"
     for date,
     in dates]
+
+for date, in dates:
+    shutil.rmtree(f"""{counters_table_name}/year={date.year}/month={date.month}/day={date.day}""")
 
 for recalc_read_names_query in recalc_read_names_queries:
     recalc_query = f"""COPY ({recalc_read_names_query}) TO '{counters_table_name}' (FORMAT PARQUET, PARTITION_BY (year, month, day), OVERWRITE_OR_IGNORE, FILENAME_PATTERN "counters")"""
@@ -107,5 +113,4 @@ for recalc_read_names_query in recalc_read_names_queries:
 
 # Reading to check section
 read_parquet_query = f"SELECT * FROM read_parquet('{counters_table_name}/**/*.parquet')"
-duckdb.sql(read_parquet_query).show() #7358
-
+duckdb.sql(read_parquet_query).show()  # 7358
