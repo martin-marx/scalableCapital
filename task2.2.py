@@ -1,6 +1,6 @@
 import duckdb
 
-result_table_name = 'listenings_facts'
+from constants import result_table_name
 
 # 2.2
 write_query = f"""
