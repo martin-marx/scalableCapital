@@ -1,26 +1,27 @@
 import duckdb
 import datetime
-from datetime import timedelta
 import os
 
-counters_table_name = 'counters'
+names_table_name = 'names'
+result_table_name = 'listenings_facts'
 
-today = datetime.date.today() + timedelta(days=1)
+# today = datetime.date.today()
+today = datetime.datetime(2019, 1, 10)
 dates = [today - datetime.timedelta(days=x) for x in range(7)]
 
 existing_data_queries = [
-    f"SELECT user_name FROM read_parquet('{counters_table_name}/year={date.year}/month={date.month}/day={date.day}/*.parquet')"
+    f"SELECT user_name FROM read_parquet('{names_table_name}/year={date.year}/month={date.month}/day={date.day}/*.parquet')"
     for date
     in dates
-    if os.path.isdir(f"{counters_table_name}/year={date.year}/month={date.month}/day={date.day}")]
+    if os.path.isdir(f"{names_table_name}/year={date.year}/month={date.month}/day={date.day}")]
 
 existing_data_query = "\nUNION\n".join(existing_data_queries)
 
 # 2.3
 if not existing_data_query:
-  write_query = f"""SELECT (DATE '{today}') AS date, 0 AS number_active_users, 0 AS percentage_active_users"""
+    write_query = f"""SELECT (DATE '{today}') AS date, 0 AS number_active_users, 0 AS percentage_active_users"""
 else:
-  write_query = f"""
+    write_query = f"""
   WITH active_users AS (
     {existing_data_query}
   ),
@@ -34,7 +35,7 @@ else:
     SELECT  
       COUNT(DISTINCT user_name) AS all_user_count 
     FROM 
-      read_parquet('counters/**/*.parquet')
+      read_parquet('{names_table_name}/**/*.parquet')
   )
   SELECT 
     (DATE '{today}') AS date ,
