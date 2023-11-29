@@ -3,7 +3,6 @@ import datetime
 import os
 
 names_table_name = 'names'
-result_table_name = 'listenings_facts'
 
 # today = datetime.date.today()
 today = datetime.datetime(2019, 1, 10)
