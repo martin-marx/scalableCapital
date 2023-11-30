@@ -30,7 +30,7 @@ SELECT
   track_metadata.track_name AS song_name, 
   user_name AS user_name,
   recording_msid AS recording_msid, 
-  TO_TIMESTAMP(listened_at) AS time,
+  TO_TIMESTAMP(listened_at) AT TIME ZONE 'Germany/Berlin' AS time,
   HASH(CONCAT(listened_at, recording_msid)) AS hash, 
   YEAR(TO_TIMESTAMP(listened_at)) AS year, 
   MONTH(TO_TIMESTAMP(listened_at)) AS month, 

@@ -8,7 +8,7 @@ if __name__ == '__main__':
     write_query = f"""
     WITH counters AS (
       SELECT  
-        COUNT(user_name) AS listens,
+        COUNT(user_name) AS number_of_listens,
         user_name,
         DATE_TRUNC('day', time) as date
       FROM
@@ -18,8 +18,8 @@ if __name__ == '__main__':
     ),
     ranked AS (
       SELECT
-        ROW_NUMBER() OVER (PARTITION BY user_name ORDER BY listens DESC) AS ranked_listens,
-        listens,
+        ROW_NUMBER() OVER (PARTITION BY user_name ORDER BY number_of_listens DESC) AS ranked_listens,
+        number_of_listens,
         user_name,
         date
       FROM
@@ -27,13 +27,13 @@ if __name__ == '__main__':
     )
     SELECT 
       user_name, 
-      listens,
+      number_of_listens,
       date
     FROM
       ranked
     WHERE 
       ranked_listens <= 3
     ORDER BY
-      user, listens
+      user, number_of_listens
     """
     duckdb.sql(write_query).show()
